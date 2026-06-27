@@ -97,8 +97,8 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: BrandColors.mist,
       appBarTheme: const AppBarTheme(
-        backgroundColor: BrandColors.agnosticBlue,
-        foregroundColor: Colors.white,
+        backgroundColor: BrandColors.mist, // neutral so the colour wordmark reads
+        foregroundColor: BrandColors.ink,
         centerTitle: false,
       ),
       dividerColor: BrandColors.hairline,

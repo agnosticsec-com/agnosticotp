@@ -109,9 +109,11 @@ class _HomePageState extends State<HomePage> {
     final accounts = widget.state.accounts;
     return Scaffold(
       appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Image.asset('assets/brand/AS_Logo_Reversed_White.png'),
+        leading: const Padding(
+          padding: EdgeInsets.all(8),
+          child: Image(
+            image: AssetImage('assets/brand/AS_Logo_Primary.png'), // full colour
+          ),
         ),
         title: const AppWordmark(),
         actions: [
