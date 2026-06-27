@@ -1,6 +1,12 @@
 # Scoping: FIPS 140-3 Level 1 (validated module) for AgnosticOTP
 
-**Status:** roadmap / not built. **Date:** 2026-06-27.
+**Status:** roadmap / not pursued. **Date:** 2026-06-27.
+
+> **DECISION (2026-06-27):** Keep **Argon2id as the default** KDF — it is more
+> resistant to offline GPU/ASIC cracking than PBKDF2. We will **not** pursue a
+> FIPS-Level-1 validated-module build that would force PBKDF2-only, *unless a
+> regulated customer mandates it*. PBKDF2 stays as an explicit opt-in for anyone
+> who needs FIPS-Approved algorithms; we do not weaken the default for a label.
 
 ## Goal
 Let AgnosticOTP legitimately claim **"FIPS 140-3 Level 1 — cryptography performed
