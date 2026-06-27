@@ -21,7 +21,12 @@ class LockScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(AppTheme.logoPrimary, height: 96),
+              Image.asset(
+                theme.brightness == Brightness.dark
+                    ? AppTheme.logoReversed
+                    : AppTheme.logoPrimary,
+                height: 96,
+              ),
               const SizedBox(height: 16),
               Text('AgnosticOTP', style: theme.textTheme.headlineSmall),
               const SizedBox(height: 8),

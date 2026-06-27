@@ -63,6 +63,8 @@ class _AgnosticOtpAppState extends State<AgnosticOtpApp>
       title: 'AgnosticOTP',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.dark, // dark by default
       home: AnimatedBuilder(
         animation: _state,
         builder: (context, _) {

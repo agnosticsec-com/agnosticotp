@@ -23,6 +23,57 @@ class AppTheme {
   static const String logoPrimary = 'assets/brand/AS_Logo_Primary.png';
   static const String logoReversed = 'assets/brand/AS_Logo_Reversed_White.png';
 
+  // Dark surfaces derived from the brand Ink colour.
+  static const Color _darkScaffold = Color(0xFF12161E);
+  static const Color _darkSurface = Color(0xFF1A1F2B); // brand Ink
+  static const Color _darkSurfaceHi = Color(0xFF252C3A);
+  static const Color _darkOnSurface = Color(0xFFE6EAF0);
+  // Agnostic Blue lightened for legibility on dark (keeps the brand hue).
+  static const Color _blueOnDark = Color(0xFF4F9BD0);
+
+  static ThemeData dark() {
+    const scheme = ColorScheme(
+      brightness: Brightness.dark,
+      primary: _blueOnDark,
+      onPrimary: Color(0xFF08131D),
+      secondary: BrandColors.agnosticOrange,
+      onSecondary: Colors.white,
+      tertiary: BrandColors.agnosticOrange,
+      onTertiary: Colors.white,
+      surface: _darkSurface,
+      onSurface: _darkOnSurface,
+      surfaceContainerHighest: _darkSurfaceHi,
+      outline: BrandColors.slate,
+      outlineVariant: Color(0xFF2A3140),
+      error: Color(0xFFEF5350),
+      onError: Colors.white,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: _darkScaffold,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: _darkSurface,
+        foregroundColor: _darkOnSurface,
+        centerTitle: false,
+      ),
+      dividerColor: const Color(0xFF2A3140),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: _blueOnDark,
+          foregroundColor: const Color(0xFF08131D),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: BrandColors.agnosticOrange,
+        foregroundColor: Colors.white,
+      ),
+    );
+  }
+
   static ThemeData light() {
     const scheme = ColorScheme(
       brightness: Brightness.light,
