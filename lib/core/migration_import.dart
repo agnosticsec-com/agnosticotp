@@ -36,6 +36,11 @@ class ImportResult {
   int get skippedCount => skipped.length;
 }
 
+/// Cap on the base64 `data=` payload of a migration QR — bounds the allocation
+/// from a hostile/oversized file (pentest C-LOW-1). 64 KiB covers hundreds of
+/// accounts; real exports are a few hundred bytes.
+const int kMaxMigrationDataChars = 65536;
+
 class AuthenticatorImport {
   AuthenticatorImport._();
 
@@ -89,6 +94,9 @@ class AuthenticatorImport {
     final data = parsed.queryParameters['data'];
     if (data == null || data.isEmpty) {
       throw const OtpauthParseException('Migration QR has no data.');
+    }
+    if (data.length > kMaxMigrationDataChars) {
+      throw const OtpauthParseException('Migration QR payload is too large.');
     }
     final bytes = _decodeBase64(data);
     return _parseMigrationPayload(bytes);

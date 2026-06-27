@@ -25,8 +25,9 @@
 //    plugin use a Keystore CryptoObject, cryptographically binding the AES-256
 //    key to the biometric. Any value >= 0 makes it authenticate WITHOUT the
 //    cipher (a boolean-ish gate a rooted device can bypass). Do not change.
-//    (StrongBox is not requested by the package → keys are TEE-backed, not
-//    secure-element-backed; tracked as a deferred enhancement.)
+//    (StrongBox IS requested when the device reports FEATURE_STRONGBOX_KEYSTORE
+//    — BiometricStorageFile.kt:41-44 setIsStrongBoxBacked(...) — so the key is
+//    secure-element-backed on capable hardware, TEE-backed otherwise.)
 
 import 'dart:convert';
 

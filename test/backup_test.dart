@@ -88,5 +88,42 @@ void main() {
         throwsA(isA<BackupFormatException>()),
       );
     });
+
+    test('header tampering is rejected via AAD (B-MED-1)', () async {
+      final env = await BackupCodec.encrypt(
+          plaintext: vaultJson,
+          passphrase: 'header-tamper-test-1',
+          kdf: BackupKdf.pbkdf2);
+      final m = jsonDecode(env) as Map<String, dynamic>;
+      // alter a bound header field to another valid 12-byte base64 nonce
+      m['nonce'] = base64.encode(List<int>.filled(12, 7));
+      expect(
+        () => BackupCodec.decrypt(
+            envelopeJson: jsonEncode(m), passphrase: 'header-tamper-test-1'),
+        throwsA(isA<BackupDecryptException>()),
+      );
+    });
+
+    test('hostile field types raise a clean error, not a crash (B-MED-2)',
+        () async {
+      final env = await BackupCodec.encrypt(
+          plaintext: vaultJson,
+          passphrase: 'type-guard-test-12',
+          kdf: BackupKdf.pbkdf2);
+      final base = jsonDecode(env) as Map<String, dynamic>;
+      final mutations = <Map<String, dynamic> Function(Map<String, dynamic>)>[
+        (m) => m..['salt'] = 12345, // number, not string
+        (m) => m..remove('tag'), // missing field
+        (m) => m..['nonce'] = '!!!not-base64!!!', // invalid base64
+      ];
+      for (final mutate in mutations) {
+        final m = mutate(Map<String, dynamic>.from(base));
+        expect(
+          () => BackupCodec.decrypt(
+              envelopeJson: jsonEncode(m), passphrase: 'type-guard-test-12'),
+          throwsA(isA<BackupFormatException>()),
+        );
+      }
+    });
   });
 }

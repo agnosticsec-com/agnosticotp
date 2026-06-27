@@ -143,10 +143,20 @@ class BackupCodec {
 
     final aes = AesGcm.with256bits();
     final nonce = aes.newNonce();
+    // Bind the (plaintext) header to the ciphertext as AAD so tampering with
+    // kdf/salt/nonce is detected by the GCM tag, not silently tolerated
+    // (pentest B-MED-1). The KDF determines its own params, so binding the kdf
+    // wire name covers kdfParams too.
+    final aad = _headerAad(
+      kdfWire: kdf.wire,
+      saltB64: base64.encode(salt),
+      nonceB64: base64.encode(nonce),
+    );
     final box = await aes.encrypt(
       utf8.encode(plaintext),
       secretKey: key,
       nonce: nonce,
+      aad: aad,
     );
 
     final envelope = {
@@ -186,24 +196,59 @@ class BackupCodec {
       throw BackupFormatException('Unsupported cipher: ${env['cipher']}.');
     }
 
-    final kdf = BackupKdf.fromWire(env['kdf'] as String);
-    final salt = base64.decode(env['salt'] as String);
-    final nonce = base64.decode(env['nonce'] as String);
-    final cipherText = base64.decode(env['ciphertext'] as String);
-    final tag = base64.decode(env['tag'] as String);
+    // Every field is validated as a String before use so a hostile/corrupt
+    // file raises a clean BackupFormatException instead of a TypeError crash
+    // (pentest B-MED-2).
+    final kdfWire = _requireString(env, 'kdf');
+    final saltB64 = _requireString(env, 'salt');
+    final nonceB64 = _requireString(env, 'nonce');
+    final kdf = BackupKdf.fromWire(kdfWire);
+    final salt = _decodeB64(env, 'salt', saltB64);
+    final nonce = _decodeB64(env, 'nonce', nonceB64);
+    final cipherText = _decodeB64(env, 'ciphertext', _requireString(env, 'ciphertext'));
+    final tag = _decodeB64(env, 'tag', _requireString(env, 'tag'));
 
     final key =
         await _kdfFor(kdf).deriveKeyFromPassword(password: passphrase, nonce: salt);
 
+    // Reconstruct the AAD from the header; if any bound field was altered the
+    // GCM tag check fails (B-MED-1).
+    final aad =
+        _headerAad(kdfWire: kdfWire, saltB64: saltB64, nonceB64: nonceB64);
     final aes = AesGcm.with256bits();
     try {
       final clear = await aes.decrypt(
         SecretBox(cipherText, nonce: nonce, mac: Mac(tag)),
         secretKey: key,
+        aad: aad,
       );
       return utf8.decode(clear);
     } on SecretBoxAuthenticationError {
       throw const BackupDecryptException();
+    }
+  }
+
+  /// Canonical AAD over the integrity-relevant header fields (fixed order).
+  static List<int> _headerAad({
+    required String kdfWire,
+    required String saltB64,
+    required String nonceB64,
+  }) =>
+      utf8.encode('$_kFormat|$_kVersion|aes-256-gcm|$kdfWire|$saltB64|$nonceB64');
+
+  static String _requireString(Map<String, dynamic> env, String key) {
+    final v = env[key];
+    if (v is! String) {
+      throw BackupFormatException('Backup field "$key" is missing or malformed.');
+    }
+    return v;
+  }
+
+  static Uint8List _decodeB64(Map<String, dynamic> env, String key, String value) {
+    try {
+      return base64.decode(value);
+    } on FormatException {
+      throw BackupFormatException('Backup field "$key" is not valid base64.');
     }
   }
 
