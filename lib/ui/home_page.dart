@@ -11,6 +11,7 @@ import 'backup_page.dart';
 import 'brand_wordmark.dart';
 import 'import_page.dart';
 import 'manual_entry_page.dart';
+import 'paste_otpauth_page.dart';
 import 'restore_page.dart';
 import 'scan_page.dart';
 
@@ -58,6 +59,11 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Enter secret manually'),
               onTap: () => Navigator.pop(ctx, 'manual'),
             ),
+            ListTile(
+              leading: const Icon(Icons.link),
+              title: const Text('Paste otpauth:// link'),
+              onTap: () => Navigator.pop(ctx, 'paste'),
+            ),
           ],
         ),
       ),
@@ -74,6 +80,11 @@ class _HomePageState extends State<HomePage> {
       account = await Navigator.push<Account>(
         context,
         MaterialPageRoute(builder: (_) => const ManualEntryPage()),
+      );
+    } else if (choice == 'paste') {
+      account = await Navigator.push<Account>(
+        context,
+        MaterialPageRoute(builder: (_) => const PasteOtpauthPage()),
       );
     }
     if (account == null || !mounted) return;
